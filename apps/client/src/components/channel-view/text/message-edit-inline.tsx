@@ -2,6 +2,7 @@ import { TiptapInput } from '@/components/tiptap-input';
 import { getTRPCClient } from '@/lib/trpc';
 import {
   type TMessage,
+  htmlToTiptapHtml,
   isEmptyMessage,
   prepareMessageHtml
 } from '@sharkord/shared';
@@ -16,7 +17,11 @@ type TMessageEditInlineProps = {
 
 const MessageEditInline = memo(
   ({ message, onBlur }: TMessageEditInlineProps) => {
-    const [value, setValue] = useState<string>(message.content ?? '');
+    // convert stored html back to tiptap paragraph html so the editor shows
+    // raw markdown text with all lines and whitespace correctly preserved
+    const [value, setValue] = useState<string>(
+      message.content ? htmlToTiptapHtml(message.content) : ''
+    );
 
     const onSubmit = useCallback(
       async (newValue: string | undefined) => {

@@ -16,7 +16,8 @@
     "test:watch": "bun test --watch"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/turndown": "^5.0.6"
   },
   "peerDependencies": {
     "@types/react": "^19",
@@ -33,7 +34,9 @@
     "drizzle-orm": "^0.44.6",
     "js-sha256": "^0.11.1",
     "linkify-it": "^5.0.0",
+    "marked": "^17.0.4",
     "mediasoup": "^3.19.9",
+    "turndown": "^7.2.2",
     "zod": "^4.3.5"
   }
 }

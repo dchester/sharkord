@@ -4,6 +4,7 @@ import { useFilteredUsers } from '@/features/server/users/hooks';
 import type { TCommandInfo } from '@sharkord/shared';
 import { Button } from '@sharkord/ui';
 import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji';
+import { Placeholder } from '@tiptap/extensions';
 import Link from '@tiptap/extension-link';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -21,6 +22,7 @@ import {
   COMMANDS_STORAGE_KEY,
   CommandSuggestion
 } from './plugins/command-suggestion';
+import { MarkdownSyntaxDim } from './plugins/markdown-syntax-dim';
 import { Mention } from './plugins/mentions';
 import { MentionNode } from './plugins/mentions/node';
 import {
@@ -34,6 +36,7 @@ type TTiptapInputProps = {
   disabled?: boolean;
   readOnly?: boolean;
   value?: string;
+  placeholder?: string;
   onChange?: (html: string) => void;
   onSubmit?: () => void;
   onCancel?: () => void;
@@ -44,6 +47,7 @@ type TTiptapInputProps = {
 const TiptapInput = memo(
   ({
     value,
+    placeholder,
     onChange,
     onSubmit,
     onCancel,
@@ -68,6 +72,20 @@ const TiptapInput = memo(
     const extensions = useMemo(() => {
       const exts = [
         StarterKit.configure({
+          // disable all WYSIWYG formatting -- we want to see every character
+          // typed as-is (markdown-aware plain text, not rich text)
+          bold: false,
+          italic: false,
+          strike: false,
+          code: false,
+          codeBlock: false,
+          blockquote: false,
+          heading: false,
+          bulletList: false,
+          orderedList: false,
+          listItem: false,
+          listKeymap: false,
+          horizontalRule: false,
           hardBreak: {
             HTMLAttributes: {
               class: 'hard-break'
@@ -98,7 +116,9 @@ const TiptapInput = memo(
           users,
           suggestion: MentionSuggestion
         }),
-        MentionNode
+        MentionNode,
+        MarkdownSyntaxDim,
+        Placeholder.configure({ placeholder })
       ];
 
       if (commands) {
@@ -112,7 +132,7 @@ const TiptapInput = memo(
       }
 
       return exts;
-    }, [customEmojis, commands, users]);
+    }, [customEmojis, commands, users, placeholder]);
 
     const editor = useEditor({
       extensions,
@@ -128,7 +148,7 @@ const TiptapInput = memo(
         }
       },
       editorProps: {
-        handleKeyDown: (_view, event) => {
+        handleKeyDown: (view, event) => {
           // block all input when readOnly
           if (readOnlyRef.current) {
             event.preventDefault();
@@ -141,6 +161,12 @@ const TiptapInput = memo(
 
           if (event.key === 'Enter') {
             if (event.shiftKey) {
+              // prosemirror scrolls the cursor into view synchronously before
+              // the browser has laid out the new <br> -- re-scroll after the
+              // next paint so the cursor is actually visible on the new line
+              requestAnimationFrame(() => {
+                view.dispatch(view.state.tr.scrollIntoView());
+              });
               return false;
             }
 

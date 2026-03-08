@@ -12,6 +12,7 @@ import { getTRPCClient } from '@/lib/trpc';
 import type { TJoinedPublicUser, TTempFile } from '@sharkord/shared';
 import {
   ChannelPermission,
+  ChannelType,
   Permission,
   PluginSlot,
   isEmptyMessage
@@ -85,6 +86,13 @@ const MessageCompose = memo(
       );
     }, [can, channelCan, channel, publicSettings]);
 
+    const placeholder = useMemo(() => {
+      if (!channel) return 'Message';
+      if (channel.isDm) return `Message ${channel.name}`;
+      const prefix = channel.type === ChannelType.TEXT ? '#' : '';
+      return `Message ${prefix}${channel.name}`;
+    }, [channel]);
+
     const pluginCommands = useMemo(
       () =>
         can(Permission.EXECUTE_PLUGIN_COMMANDS) ? allPluginCommands : undefined,
@@ -147,7 +155,7 @@ const MessageCompose = memo(
     return (
       <div
         ref={containerRef}
-        className="flex shrink-0 flex-col gap-2 p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
+        className="flex shrink-0 flex-col gap-2 p-2 pl-[calc(0.5rem+4px)] pb-[calc(env(safe-area-inset-bottom)+0.5rem)]"
       >
         {uploading && (
           <div className="flex items-center gap-2">
@@ -174,6 +182,7 @@ const MessageCompose = memo(
         <div className="flex items-center gap-2 rounded-lg">
           <TiptapInput
             value={message}
+            placeholder={placeholder}
             onChange={onMessageChange}
             onSubmit={handleSend}
             onTyping={onTyping}

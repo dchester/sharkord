@@ -1,90 +1,65 @@
 import { describe, expect, test } from 'bun:test';
-import {
-  normalizeLineBreaks,
-  prepareMessageHtml
-} from '../prepare-message-html';
+import { prepareMessageHtml } from '../prepare-message-html';
 
-describe('normalizeLineBreaks', () => {
-  test('trailing hard-break before </p><p> becomes an empty paragraph', () => {
-    expect(
-      normalizeLineBreaks(
-        '<p>line one<br class="hard-break"></p><p>line two</p>'
-      )
-    ).toBe('<p>line one</p><p></p><p>line two</p>');
-  });
-
-  test('trailing hard-break inside <h4> before <p> becomes an empty paragraph', () => {
-    expect(
-      normalizeLineBreaks('<h4>heading<br class="hard-break"></h4><p>body</p>')
-    ).toBe('<h4>heading</h4><p></p><p>body</p>');
-  });
-
-  test('trailing hard-break inside <div> before <blockquote> becomes an empty paragraph', () => {
-    expect(
-      normalizeLineBreaks(
-        '<div>text<br class="hard-break"></div><blockquote>quote</blockquote>'
-      )
-    ).toBe('<div>text</div><p></p><blockquote>quote</blockquote>');
-  });
-
-  test('mid-paragraph hard-break is left untouched', () => {
-    const input = '<p>line one<br class="hard-break">line two</p>';
-    expect(normalizeLineBreaks(input)).toBe(input);
-  });
-
-  test('trailing hard-break at end of last paragraph (no following block) is left untouched', () => {
-    const input = '<p>line one<br class="hard-break"></p>';
-    expect(normalizeLineBreaks(input)).toBe(input);
-  });
-
-  test('multiple trailing hard-breaks across paragraphs are all normalised', () => {
-    expect(
-      normalizeLineBreaks(
-        '<p>one<br class="hard-break"></p><p>two<br class="hard-break"></p><p>three</p>'
-      )
-    ).toBe('<p>one</p><p></p><p>two</p><p></p><p>three</p>');
-  });
-
-  test('hard-break with extra whitespace before closing tag still matches', () => {
-    expect(
-      normalizeLineBreaks(
-        '<p>line one<br class="hard-break">  </p><p>line two</p>'
-      )
-    ).toBe('<p>line one</p><p></p><p>line two</p>');
-  });
-
-  test('content with no hard-breaks is returned unchanged', () => {
-    const input = '<p>hello</p><p>world</p>';
-    expect(normalizeLineBreaks(input)).toBe(input);
-  });
-
-  test('empty string is returned unchanged', () => {
-    expect(normalizeLineBreaks('')).toBe('');
-  });
-});
+// prepareMessageHtml now converts tiptap paragraph html → markdown → html
+// so each test sends in what tiptap getHTML() would produce and checks the
+// final html that gets stored in the database
 
 describe('prepareMessageHtml', () => {
-  test('normalizes trailing hard-break and linkifies in a single call', () => {
-    expect(
-      prepareMessageHtml(
-        '<p>see https://example.com<br class="hard-break"></p><p>next</p>'
-      )
-    ).toBe(
-      '<p>see <a href="https://example.com" target="_blank" rel="noopener noreferrer">https://example.com</a></p><p></p><p>next</p>'
-    );
-  });
+  test('plain paragraph is wrapped in a <p> tag', () => {
+    expect(prepareMessageHtml('<p>hello world</p>')).toBe(
+      '<p>hello world</p>\n'
+    )
+  })
 
-  test('normalization runs before linkification', () => {
-    // if order were reversed, linkify would wrap text nodes and the br regex
-    // would never match the now-fragmented html
-    const input = '<p>text<br class="hard-break"></p><p>more</p>';
-    const result = prepareMessageHtml(input);
+  test('markdown heading is rendered as <h1>', () => {
+    expect(prepareMessageHtml('<p># my heading</p>')).toBe(
+      '<h1>my heading</h1>\n'
+    )
+  })
 
-    expect(result).toContain('<p></p>');
-  });
+  test('bold markdown is rendered as <strong>', () => {
+    expect(prepareMessageHtml('<p>**hello** world</p>')).toBe(
+      '<p><strong>hello</strong> world</p>\n'
+    )
+  })
 
-  test('passes through content with neither hard-breaks nor urls unchanged', () => {
-    const input = '<p>hello world</p>';
-    expect(prepareMessageHtml(input)).toBe(input);
-  });
-});
+  test('italic markdown is rendered as <em>', () => {
+    expect(prepareMessageHtml('<p>_hello_ world</p>')).toBe(
+      '<p><em>hello</em> world</p>\n'
+    )
+  })
+
+  test('two paragraphs become two <p> blocks', () => {
+    const result = prepareMessageHtml('<p>first</p><p>second</p>')
+    expect(result).toContain('<p>first</p>')
+    expect(result).toContain('<p>second</p>')
+  })
+
+  test('hard-break inside a paragraph becomes a <br>', () => {
+    const result = prepareMessageHtml(
+      '<p>line one<br class="hard-break">line two</p>'
+    )
+    expect(result).toContain('<br>')
+    expect(result).toContain('line one')
+    expect(result).toContain('line two')
+  })
+
+  test('inline mention span is passed through unchanged', () => {
+    const mention = '<span data-type="mention" data-user-id="42">@alice</span>'
+    const result = prepareMessageHtml(`<p>hello ${mention}</p>`)
+    expect(result).toContain('data-type="mention"')
+    expect(result).toContain('data-user-id="42"')
+  })
+
+  test('bare url is linkified', () => {
+    const result = prepareMessageHtml('<p>see https://example.com</p>')
+    expect(result).toContain(
+      '<a href="https://example.com" target="_blank" rel="noopener noreferrer">https://example.com</a>'
+    )
+  })
+
+  test('empty string returns empty string', () => {
+    expect(prepareMessageHtml('')).toBe('')
+  })
+})
