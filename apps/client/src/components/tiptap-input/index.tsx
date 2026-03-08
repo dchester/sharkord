@@ -6,6 +6,7 @@ import { Button } from '@sharkord/ui';
 import Emoji, { gitHubEmojis } from '@tiptap/extension-emoji';
 import { Placeholder } from '@tiptap/extensions';
 import Link from '@tiptap/extension-link';
+import { DOMParser as PMMDOMParser } from '@tiptap/pm/model';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { ChevronDown, ChevronUp, Smile } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
   useRef,
   useState
 } from 'react';
+import { htmlToTiptapHtml } from '@/helpers/html-to-tiptap-html';
 import type { TEmojiItem } from './helpers';
 import {
   COMMANDS_STORAGE_KEY,
@@ -86,11 +88,7 @@ const TiptapInput = memo(
           listItem: false,
           listKeymap: false,
           horizontalRule: false,
-          hardBreak: {
-            HTMLAttributes: {
-              class: 'hard-break'
-            }
-          }
+          hardBreak: false
         }),
         Link.configure({
           autolink: true,
@@ -161,13 +159,15 @@ const TiptapInput = memo(
 
           if (event.key === 'Enter') {
             if (event.shiftKey) {
-              // prosemirror scrolls the cursor into view synchronously before
-              // the browser has laid out the new <br> -- re-scroll after the
-              // next paint so the cursor is actually visible on the new line
-              requestAnimationFrame(() => {
-                view.dispatch(view.state.tr.scrollIntoView());
-              });
-              return false;
+              // insert a new paragraph instead of a hard-break -- shift+enter
+              // means "new line without submitting", not "inline line break"
+              event.preventDefault();
+              view.dispatch(
+                view.state.tr
+                  .split(view.state.selection.anchor)
+                  .scrollIntoView()
+              );
+              return true;
             }
 
             // if suggestions are active, don't handle Enter - let the suggestion handle it
@@ -200,7 +200,36 @@ const TiptapInput = memo(
 
           return false;
         },
-        handlePaste: () => !!readOnlyRef.current,
+        handlePaste: (view, event) => {
+          if (readOnlyRef.current) return true;
+
+          const html = event.clipboardData?.getData('text/html');
+          const text = event.clipboardData?.getData('text/plain');
+
+          // convert html clipboard content to markdown paragraph html, then
+          // let prosemirror parse and insert it as structured nodes
+          const escapeText = (s: string) =>
+            s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+          const pasteHtml = html
+            ? htmlToTiptapHtml(html)
+            : text
+              ? text.split(/\r?\n/).map((l) => `<p>${escapeText(l)}</p>`).join('')
+              : null;
+
+          if (!pasteHtml) return false;
+
+          event.preventDefault();
+
+          const { state, dispatch } = view;
+          const dom = document.createElement('div');
+          dom.innerHTML = pasteHtml;
+          const slice = PMMDOMParser
+            .fromSchema(state.schema)
+            .parseSlice(dom);
+          dispatch(state.tr.replaceSelection(slice).scrollIntoView());
+          return true;
+        },
         handleDrop: () => readOnlyRef.current
       }
     });

@@ -36,15 +36,6 @@ describe('prepareMessageHtml', () => {
     expect(result).toContain('<p>second</p>')
   })
 
-  test('hard-break inside a paragraph becomes a <br>', () => {
-    const result = prepareMessageHtml(
-      '<p>line one<br class="hard-break">line two</p>'
-    )
-    expect(result).toContain('<br>')
-    expect(result).toContain('line one')
-    expect(result).toContain('line two')
-  })
-
   test('inline mention span is passed through unchanged', () => {
     const mention = '<span data-type="mention" data-user-id="42">@alice</span>'
     const result = prepareMessageHtml(`<p>hello ${mention}</p>`)

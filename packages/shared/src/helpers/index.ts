@@ -3,7 +3,6 @@ export * from './extract-urls';
 export * from './get-mediasoup-kind';
 export * from './get-random-string';
 export * from './has-mention';
-export * from './html-to-markdown';
 export * from './linkify-html';
 export * from './markdown-to-html';
 export * from './message-sanitizer';

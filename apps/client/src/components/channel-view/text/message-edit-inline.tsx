@@ -1,8 +1,8 @@
 import { TiptapInput } from '@/components/tiptap-input';
+import { htmlToTiptapHtml } from '@/helpers/html-to-tiptap-html';
 import { getTRPCClient } from '@/lib/trpc';
 import {
   type TMessage,
-  htmlToTiptapHtml,
   isEmptyMessage,
   prepareMessageHtml
 } from '@sharkord/shared';
