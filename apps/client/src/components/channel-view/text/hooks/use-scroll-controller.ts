@@ -15,6 +15,7 @@ type TUseScrollControllerReturn = {
   onScroll: () => void;
   scrollToBottom: () => void;
   onAsyncContentLoaded: () => void;
+  isAtBottom: () => boolean;
 };
 
 const SCROLL_THRESHOLD = 80;
@@ -129,29 +130,6 @@ const useScrollController = ({
     }
   }, [messages, hasTypingUsers, scrollToBottom]);
 
-  // keep bottom lock on container resize (input/footer height changes)
-  useEffect(() => {
-    const container = containerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const observer = new ResizeObserver(() => {
-      if (!shouldStickToBottom.current) {
-        return;
-      }
-
-      scrollToBottom();
-    });
-
-    observer.observe(container);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [scrollToBottom]);
-
   // scroll to bottom when async content loads (e.g. metadata images)
   const onAsyncContentLoaded = useCallback(() => {
     if (shouldStickToBottom.current) {
@@ -159,11 +137,20 @@ const useScrollController = ({
     }
   }, [scrollToBottom]);
 
+  const isAtBottom = useCallback(() => {
+    const container = containerRef.current;
+
+    if (!container) return true;
+
+    return isNearBottom(container);
+  }, [isNearBottom]);
+
   return {
     containerRef,
     onScroll,
     scrollToBottom,
-    onAsyncContentLoaded
+    onAsyncContentLoaded,
+    isAtBottom
   };
 };
 

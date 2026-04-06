@@ -236,6 +236,11 @@ body {
   display: inline-block;
 }
 
+
+.tiptap .ProseMirror {
+  padding: 14px 20px;
+}
+
 .tiptap,
 .msg-content {
   line-height: 1.6;

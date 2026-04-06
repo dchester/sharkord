@@ -23,6 +23,7 @@ import { throttle } from 'lodash-es';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { ChatInputDivider } from './chat-input-divider';
 import { useScrollController } from './hooks/use-scroll-controller';
 import { useScrollToJumpTarget } from './hooks/use-scroll-to-jump-target';
 import { MessagesGroup } from './messages-group';
@@ -63,6 +64,7 @@ const TextChannel = memo(({ channelId, onClose }: TChannelProps) => {
   >();
   const typingUsers = useTypingUsersByChannelId(channelId);
   const composeRef = useRef<TMessageComposeHandle>(null);
+  const composeContainerRef = useRef<HTMLDivElement>(null);
 
   const replyTarget = useMemo<TReplyTarget | undefined>(() => {
     if (!replyingToMessage) {
@@ -76,13 +78,25 @@ const TextChannel = memo(({ channelId, onClose }: TChannelProps) => {
     return { userId: replyingToMessage.userId, pluginId: null };
   }, [replyingToMessage]);
 
-  const { containerRef, onScroll, onAsyncContentLoaded } = useScrollController({
+  const {
+    containerRef,
+    onScroll,
+    onAsyncContentLoaded,
+    scrollToBottom,
+    isAtBottom
+  } = useScrollController({
     messages,
     fetching,
     hasMore,
     loadMore,
     hasTypingUsers: typingUsers.length > 0
   });
+
+  const onComposeResize = useCallback(() => {
+    if (isAtBottom()) {
+      scrollToBottom();
+    }
+  }, [isAtBottom, scrollToBottom]);
 
   const channelCan = useChannelCan(channelId);
 
@@ -174,7 +188,7 @@ const TextChannel = memo(({ channelId, onClose }: TChannelProps) => {
         onScroll={onScroll}
         onLoadCapture={onAsyncContentLoaded}
         data-messages-container
-        className="flex-1 overflow-y-auto overflow-x-hidden p-2 animate-in fade-in duration-500"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-2 pt-2 pb-7 animate-in fade-in duration-500"
       >
         <div className="space-y-4">
           {groupedMessages.map((group, index) => (
@@ -188,8 +202,15 @@ const TextChannel = memo(({ channelId, onClose }: TChannelProps) => {
         </div>
       </div>
 
+      <ChatInputDivider
+        composeContainerRef={composeContainerRef}
+        scrollToBottom={scrollToBottom}
+        isAtBottom={isAtBottom}
+      />
+
       <MessageCompose
         ref={composeRef}
+        composeContainerRef={composeContainerRef}
         channelId={channelId}
         message={newMessage}
         onMessageChange={setNewMessageHandler}
@@ -199,6 +220,7 @@ const TextChannel = memo(({ channelId, onClose }: TChannelProps) => {
         showPluginSlot
         onCancelReply={() => setReplyingToMessage(undefined)}
         replyTarget={replyTarget}
+        onResize={onComposeResize}
       />
     </>
   );

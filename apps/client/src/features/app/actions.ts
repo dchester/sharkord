@@ -2,6 +2,7 @@ import { assertNotificationsPermission } from '@/helpers/assert-notifications-pe
 import { getFileUrl, getUrlFromServer } from '@/helpers/get-file-url';
 import {
   LocalStorageKey,
+  removeLocalStorageItem,
   setLocalStorageItem,
   setLocalStorageItemBool
 } from '@/helpers/storage';
@@ -15,7 +16,7 @@ import {
   voiceChatChannelIdSelector,
   voiceChatSidebarDataSelector
 } from './selectors';
-import { appSliceActions } from './slice';
+import { appSliceActions, CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT } from './slice';
 
 export const setAppLoading = (loading: boolean) =>
   store.dispatch(appSliceActions.setAppLoading(loading));
@@ -163,6 +164,24 @@ export const setBrowserNotificationsForMentions = async (enabled: boolean) => {
     LocalStorageKey.BROWSER_NOTIFICATIONS_FOR_MENTIONS,
     enabled
   );
+};
+
+export const setChatInputMaxHeightVh = (vh: number) => {
+  // caller already rounds; clamp to a safe range
+  const clamped = Math.min(80, Math.max(2, vh));
+
+  store.dispatch(appSliceActions.setChatInputMaxHeightVh(clamped));
+  setLocalStorageItem(
+    LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH,
+    String(clamped)
+  );
+};
+
+export const resetChatInputMaxHeightVh = () => {
+  store.dispatch(
+    appSliceActions.setChatInputMaxHeightVh(CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT)
+  );
+  removeLocalStorageItem(LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH);
 };
 
 export const setBrowserNotificationsForDms = async (enabled: boolean) => {
