@@ -58,7 +58,9 @@ const ChatInputDivider = ({
         if (finalPx <= MIN_PX + RESET_THRESHOLD_PX) {
           // reset if they dragged back down to min height
           // leave the divider in place if there are many lines of text in the input
-          const scrollRow = composeEl.querySelector('.compose-scroll-row') as HTMLElement | null;
+          const scrollRow = composeEl.querySelector(
+            '.compose-scroll-row'
+          ) as HTMLElement | null;
           const contentHeight = scrollRow?.scrollHeight ?? MIN_PX;
           composeEl.style.height =
             contentHeight > MIN_PX + RESET_THRESHOLD_PX ? `${finalPx}px` : '';
