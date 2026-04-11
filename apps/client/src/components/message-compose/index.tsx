@@ -2,7 +2,11 @@ import { EmojiPicker } from '@/components/emoji-picker';
 import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
 import type { TTiptapInputHandle } from '@/components/tiptap-input';
 import { TiptapInput } from '@/components/tiptap-input';
-import { useChatInputMaxHeightVh } from '@/features/app/hooks';
+import { CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT } from '@/features/app/slice';
+import {
+  getLocalStorageItemAsNumber,
+  LocalStorageKey
+} from '@/helpers/storage';
 import { useChannelById } from '@/features/server/channels/hooks';
 import {
   useCan,
@@ -79,7 +83,6 @@ const MessageCompose = memo(
     const containerRef = composeContainerRef ?? internalContainerRef;
     const tiptapRef = useRef<TTiptapInputHandle>(null);
     const [sending, setSending] = useState(false);
-    const chatInputMaxHeightVh = useChatInputMaxHeightVh();
     const can = useCan();
     const channelCan = useChannelCan(channelId);
     const channel = useChannelById(channelId);
@@ -124,22 +127,22 @@ const MessageCompose = memo(
       fileInputProps
     } = useUploadFiles(channelId, containerRef, !canSendMessages);
 
-    // apply maxHeight from the saved value so the container can grow up to
-    // that cap but no further -- height is only set imperatively by the drag
+    // on mount, restore the saved height or set the default max-height
     useEffect(() => {
       if (!composeContainerRef) return;
       const el = composeContainerRef.current;
-      if (!el || el.style.height) return;
-      el.style.maxHeight = `${chatInputMaxHeightVh}vh`;
-    }, [chatInputMaxHeightVh, composeContainerRef]);
-
-    const resetHeight = useCallback(() => {
-      if (!composeContainerRef) return;
-      const el = composeContainerRef.current;
       if (!el) return;
-      el.style.height = '';
-      el.style.maxHeight = `${chatInputMaxHeightVh}vh`;
-    }, [composeContainerRef, chatInputMaxHeightVh]);
+      const savedVh =
+        getLocalStorageItemAsNumber(
+          LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH,
+          CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT
+        ) ?? CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT;
+      if (savedVh === CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT) {
+        el.style.maxHeight = `${savedVh}vh`;
+      } else {
+        el.style.height = `${savedVh}vh`;
+      }
+    }, [composeContainerRef]);
 
     useImperativeHandle(ref, () => ({ clearFiles }), [clearFiles]);
 
@@ -166,7 +169,6 @@ const MessageCompose = memo(
 
       if (success) {
         clearFiles();
-        resetHeight();
       }
     }, [
       message,
@@ -174,7 +176,6 @@ const MessageCompose = memo(
       canSendMessages,
       onSend,
       clearFiles,
-      resetHeight,
       publicSettings
     ]);
 

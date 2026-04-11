@@ -1,7 +1,8 @@
 import {
-  resetChatInputMaxHeightVh,
-  setChatInputMaxHeightVh
-} from '@/features/app/actions';
+  LocalStorageKey,
+  removeLocalStorageItem,
+  setLocalStorageItem
+} from '@/helpers/storage';
 import { CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT } from '@/features/app/slice';
 import { useCallback } from 'react';
 
@@ -30,6 +31,8 @@ const ChatInputDivider = ({
 
       const wasAtBottom = isAtBottom();
       const startY = e.clientY;
+      const startHeight = composeEl.style.height;
+      const startMaxHeight = composeEl.style.maxHeight;
       const startHeightPx = composeEl.getBoundingClientRect().height;
       const maxPx = (MAX_VH / 100) * window.innerHeight;
       const target = e.currentTarget;
@@ -40,7 +43,6 @@ const ChatInputDivider = ({
         const newHeightPx = Math.min(maxPx, startHeightPx - deltaY);
 
         composeEl.style.height = `${newHeightPx}px`;
-        composeEl.style.maxHeight = `${newHeightPx}px`;
 
         if (wasAtBottom) {
           scrollToBottom();
@@ -56,32 +58,27 @@ const ChatInputDivider = ({
         const finalPx = Math.min(maxPx, startHeightPx - deltaY);
 
         if (finalPx <= MIN_PX + RESET_THRESHOLD_PX) {
-          // reset if they dragged back down to min height
-          // leave the divider in place if there are many lines of text in the input
-          const scrollRow = composeEl.querySelector(
-            '.compose-scroll-row'
-          ) as HTMLElement | null;
-          const contentHeight = scrollRow?.scrollHeight ?? MIN_PX;
-          composeEl.style.height =
-            contentHeight > MIN_PX + RESET_THRESHOLD_PX ? `${finalPx}px` : '';
+          composeEl.style.height = '';
           composeEl.style.maxHeight = `${CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT}vh`;
-          resetChatInputMaxHeightVh();
+          removeLocalStorageItem(LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH);
         } else {
           const finalVh = Math.round((finalPx / window.innerHeight) * 100);
           composeEl.style.height = `${finalPx}px`;
-          composeEl.style.maxHeight = `${finalPx}px`;
-          setChatInputMaxHeightVh(finalVh);
+          composeEl.style.maxHeight = '';
+          setLocalStorageItem(
+            LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH,
+            String(finalVh)
+          );
         }
       };
 
       const onPointerCancel = () => {
-        // restore original size if the drag is interrupted (e.g. lost pointer capture)
         target.removeEventListener('pointermove', onPointerMove);
         target.removeEventListener('pointerup', finish);
         target.removeEventListener('pointercancel', onPointerCancel);
 
-        composeEl.style.height = `${startHeightPx}px`;
-        composeEl.style.maxHeight = `${startHeightPx}px`;
+        composeEl.style.height = startHeight;
+        composeEl.style.maxHeight = startMaxHeight;
       };
 
       target.addEventListener('pointermove', onPointerMove);

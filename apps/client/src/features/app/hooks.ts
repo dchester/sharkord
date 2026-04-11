@@ -7,7 +7,6 @@ import {
   browserNotificationsForMentionsSelector,
   browserNotificationsForRepliesSelector,
   browserNotificationsSelector,
-  chatInputMaxHeightVhSelector,
   devicesSelector,
   isAutoConnectingSelector,
   loadingPluginsSelector,
@@ -51,9 +50,6 @@ export const useBrowserNotificationsForMentions = () =>
 
 export const useBrowserNotificationsForDms = () =>
   useSelector(browserNotificationsForDmsSelector);
-
-export const useChatInputMaxHeightVh = () =>
-  useSelector(chatInputMaxHeightVhSelector);
 
 export const useMessageJumpTarget = () =>
   useSelector(messageJumpTargetSelector);

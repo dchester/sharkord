@@ -1,8 +1,4 @@
-import {
-  getLocalStorageItemAsNumber,
-  getLocalStorageItemBool,
-  LocalStorageKey
-} from '@/helpers/storage';
+import { getLocalStorageItemAsNumber, getLocalStorageItemBool, LocalStorageKey } from '@/helpers/storage';
 import type { TDevices, TMessageJumpToTarget } from '@/types';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
@@ -23,7 +19,6 @@ export interface TAppState {
   browserNotifications: boolean;
   browserNotificationsForMentions: boolean;
   browserNotificationsForDms: boolean;
-  chatInputMaxHeightVh: number;
   browserNotificationsForReplies: boolean;
   messageJumpTarget: TMessageJumpToTarget | undefined;
   voiceChatSidebarOpen: boolean;
@@ -58,11 +53,6 @@ const initialState: TAppState = {
     LocalStorageKey.BROWSER_NOTIFICATIONS_FOR_DMS,
     false
   ),
-  chatInputMaxHeightVh:
-    getLocalStorageItemAsNumber(
-      LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH,
-      CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT
-    ) ?? CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT,
   browserNotificationsForReplies: getLocalStorageItemBool(
     LocalStorageKey.BROWSER_NOTIFICATIONS_FOR_REPLIES,
     false
@@ -139,9 +129,6 @@ export const appSlice = createSlice({
     },
     setBrowserNotificationsForDms: (state, action: PayloadAction<boolean>) => {
       state.browserNotificationsForDms = action.payload;
-    },
-    setChatInputMaxHeightVh: (state, action: PayloadAction<number>) => {
-      state.chatInputMaxHeightVh = action.payload;
     },
     setBrowserNotificationsForReplies: (
       state,
