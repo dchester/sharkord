@@ -52,6 +52,8 @@ type TMessageComposeProps = {
   typingUsers: TJoinedPublicUser[];
   showPluginSlot?: boolean;
   composeContainerRef?: RefObject<HTMLDivElement | null>;
+  inputStorageKey?: LocalStorageKey;
+  inputDefaultMaxHeightVh?: number;
   replyTarget?: TReplyTarget;
   onCancelReply?: () => void;
   onResize?: () => void;
@@ -72,6 +74,8 @@ const MessageCompose = memo(
     typingUsers,
     showPluginSlot = false,
     composeContainerRef,
+    inputStorageKey = LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH,
+    inputDefaultMaxHeightVh = CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT,
     replyTarget,
     onCancelReply,
     onResize,
@@ -134,15 +138,15 @@ const MessageCompose = memo(
       if (!el) return;
       const savedVh =
         getLocalStorageItemAsNumber(
-          LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH,
-          CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT
-        ) ?? CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT;
-      if (savedVh === CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT) {
+          inputStorageKey,
+          inputDefaultMaxHeightVh
+        ) ?? inputDefaultMaxHeightVh;
+      if (savedVh === inputDefaultMaxHeightVh) {
         el.style.maxHeight = `${savedVh}vh`;
       } else {
         el.style.height = `${savedVh}vh`;
       }
-    }, [composeContainerRef]);
+    }, [composeContainerRef, inputStorageKey, inputDefaultMaxHeightVh]);
 
     useImperativeHandle(ref, () => ({ clearFiles }), [clearFiles]);
 

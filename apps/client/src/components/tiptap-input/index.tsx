@@ -260,7 +260,7 @@ const TiptapInput = memo(
     const isEmpty = !editor || editor.isEmpty;
 
     return (
-      <div className="relative flex min-w-0 flex-1">
+      <div className="relative flex min-w-0 flex-1" data-compose-tiptap>
         <EditorContent
           editor={editor}
           className={`w-full tiptap relative transition-colors [&_.ProseMirror:focus]:outline-none ${
