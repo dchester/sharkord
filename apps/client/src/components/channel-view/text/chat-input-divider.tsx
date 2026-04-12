@@ -94,13 +94,24 @@ const ChatInputDivider = ({
         composeEl.style.height = `${finalPx}px`;
 
         if (finalPx <= minPx + RESET_THRESHOLD_PX) {
-          composeEl.style.height = '';
-          composeEl.style.maxHeight = `${defaultMaxHeightVh}vh`;
+          const proseMirror = composeEl.querySelector('.ProseMirror') as HTMLElement | null;
+          if (proseMirror && proseMirror.scrollHeight > minPx + RESET_THRESHOLD_PX) {
+            // multi-line content -- pin at min height
+            composeEl.style.height = `${minPx}px`;
+            composeEl.style.maxHeight = '';
+            composeEl.dataset.pendingUnpinOnSend = 'true';
+          } else {
+            // single line or empty -- reset to auto-grow mode
+            composeEl.style.height = '';
+            composeEl.style.maxHeight = `${defaultMaxHeightVh}vh`;
+            delete composeEl.dataset.pendingUnpinOnSend;
+          }
           removeLocalStorageItem(storageKey);
         } else {
           composeEl.style.maxHeight = '';
           const finalVh = Math.round((finalPx / window.innerHeight) * 100);
           setLocalStorageItem(storageKey, String(finalVh));
+          delete composeEl.dataset.pendingUnpinOnSend;
         }
 
         if (wasAtBottom) {

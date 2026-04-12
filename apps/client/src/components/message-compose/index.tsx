@@ -176,8 +176,15 @@ const MessageCompose = memo(
 
       if (success) {
         clearFiles();
+        // if we were pinned down to the min then unpin now
+        const el = containerRef.current;
+        if (el?.dataset.pendingUnpinOnSend) {
+          el.style.height = '';
+          el.style.maxHeight = `${inputDefaultMaxHeightVh}vh`;
+          delete el.dataset.pendingUnpinOnSend;
+        }
       }
-    }, [message, files, canSendMessages, onSend, clearFiles, publicSettings]);
+    }, [message, files, canSendMessages, onSend, clearFiles, publicSettings, containerRef, inputDefaultMaxHeightVh]);
 
     const onRemoveFileClick = useCallback(
       async (fileId: string) => {
