@@ -21,40 +21,31 @@ type TChatInputDividerProps = {
 // the tiptap editor (file cards, reply bar, buttons, etc.) plus one line
 // of the editor. no DOM mutation, no layout change.
 const measureMinHeight = (composeEl: HTMLDivElement): number => {
-  const scrollRow = composeEl.querySelector(
-    '.compose-scroll-row'
-  ) as HTMLElement | null;
-  const tiptapWrapper = composeEl.querySelector(
-    '[data-compose-tiptap]'
-  ) as HTMLElement | null;
   const proseMirror = composeEl.querySelector('.ProseMirror') as HTMLElement | null;
+  if (!proseMirror) return MIN_PX;
 
-  if (!scrollRow || !tiptapWrapper || !proseMirror) return MIN_PX;
+  // clamp the editor to one line to measure the compose container's minimum
+  // useful height -- no content change, no undo history impact
+  proseMirror.style.overflow = 'hidden';
+  proseMirror.style.display = '-webkit-box';
+  proseMirror.style.webkitLineClamp = '1';
+  proseMirror.style.webkitBoxOrient = 'vertical';
 
-  // sum up the heights of all siblings before the tiptap wrapper in the
-  // flex column -- these are the file cards, reply bar, uploading indicator
-  const flexCol = tiptapWrapper.parentElement;
-  let nonEditorHeight = 0;
-  if (flexCol) {
-    for (const child of Array.from(flexCol.children)) {
-      if (child === tiptapWrapper) break;
-      nonEditorHeight += (child as HTMLElement).offsetHeight;
-    }
-  }
+  const savedHeight = composeEl.style.height;
+  const savedMaxHeight = composeEl.style.maxHeight;
+  composeEl.style.height = '';
+  composeEl.style.maxHeight = '';
 
-  // one line of the editor from computed style
-  const cs = window.getComputedStyle(proseMirror);
-  const lh = parseFloat(cs.lineHeight);
-  const fs = parseFloat(cs.fontSize);
-  const oneLineHeight =
-    (Number.isNaN(lh) ? (Number.isNaN(fs) ? 24 : fs * 1.2) : lh) +
-    parseFloat(cs.paddingTop || '0') +
-    parseFloat(cs.paddingBottom || '0');
+  const minHeight = composeEl.getBoundingClientRect().height;
 
-  // overhead = typing indicator + safe-area (compose height minus scroll-row height)
-  const overhead = composeEl.getBoundingClientRect().height - scrollRow.clientHeight;
+  composeEl.style.height = savedHeight;
+  composeEl.style.maxHeight = savedMaxHeight;
+  proseMirror.style.overflow = '';
+  proseMirror.style.display = '';
+  proseMirror.style.webkitLineClamp = '';
+  proseMirror.style.webkitBoxOrient = '';
 
-  return Math.max(MIN_PX, nonEditorHeight + oneLineHeight + overhead);
+  return Math.max(MIN_PX, minHeight);
 };
 
 const isEditorEmpty = (composeEl: HTMLDivElement): boolean => {
@@ -88,6 +79,7 @@ const ChatInputDivider = ({
       const startHeightPx = composeEl.getBoundingClientRect().height;
       const maxPx = (MAX_VH / 100) * window.innerHeight;
       const minPx = measureMinHeight(composeEl);
+      if (wasAtBottom) scrollToBottom();
       const target = e.currentTarget;
       target.setPointerCapture(e.pointerId);
 
