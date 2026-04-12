@@ -1,8 +1,10 @@
-import { getLocalStorageItemAsNumber, getLocalStorageItemBool, LocalStorageKey } from '@/helpers/storage';
+import {
+  getLocalStorageItemAsNumber,
+  getLocalStorageItemBool,
+  LocalStorageKey
+} from '@/helpers/storage';
 import type { TDevices, TMessageJumpToTarget } from '@/types';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-
-export const CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT = 35;
 
 export interface TAppState {
   appLoading: boolean;

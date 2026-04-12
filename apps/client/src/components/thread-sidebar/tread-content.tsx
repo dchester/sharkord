@@ -1,7 +1,7 @@
-import { CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT } from '@/features/app/slice';
 import { useTypingUsersByThreadId } from '@/features/server/hooks';
 import { useThreadMessages } from '@/features/server/messages/hooks';
 import { LocalStorageKey } from '@/helpers/storage';
+import { DEFAULT_MAX_HEIGHT_VH } from '@/components/message-compose';
 import type { TJoinedMessage } from '@sharkord/shared';
 import { Spinner } from '@sharkord/ui';
 import { MessageSquareText } from 'lucide-react';
@@ -100,8 +100,8 @@ const ThreadContent = memo(
             composeContainerRef={composeContainerRef}
             scrollToBottom={scrollToBottom}
             isAtBottom={isAtBottom}
-            storageKey={LocalStorageKey.THREAD_INPUT_MAX_HEIGHT_VH}
-            defaultMaxHeightVh={CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT}
+            storageKey={LocalStorageKey.THREAD_INPUT_HEIGHT_VH}
+            defaultMaxHeightVh={DEFAULT_MAX_HEIGHT_VH}
           />
 
           <ThreadCompose
@@ -111,8 +111,8 @@ const ThreadContent = memo(
             replyingToMessage={replyingToMessage}
             onCancelReply={() => setReplyingToMessage(undefined)}
             composeContainerRef={composeContainerRef}
-            inputStorageKey={LocalStorageKey.THREAD_INPUT_MAX_HEIGHT_VH}
-            inputDefaultMaxHeightVh={CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT}
+            inputStorageKey={LocalStorageKey.THREAD_INPUT_HEIGHT_VH}
+            inputDefaultMaxHeightVh={DEFAULT_MAX_HEIGHT_VH}
             onResize={onComposeResize}
           />
         </div>

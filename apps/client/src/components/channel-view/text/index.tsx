@@ -23,8 +23,8 @@ import { throttle } from 'lodash-es';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT } from '@/features/app/slice';
 import { LocalStorageKey } from '@/helpers/storage';
+import { DEFAULT_MAX_HEIGHT_VH } from '@/components/message-compose';
 import { ChatInputDivider } from './chat-input-divider';
 import { useScrollController } from './hooks/use-scroll-controller';
 import { useScrollToJumpTarget } from './hooks/use-scroll-to-jump-target';
@@ -208,8 +208,8 @@ const TextChannel = memo(({ channelId, onClose }: TChannelProps) => {
         composeContainerRef={composeContainerRef}
         scrollToBottom={scrollToBottom}
         isAtBottom={isAtBottom}
-        storageKey={LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH}
-        defaultMaxHeightVh={CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT}
+        storageKey={LocalStorageKey.CHAT_INPUT_HEIGHT_VH}
+        defaultMaxHeightVh={DEFAULT_MAX_HEIGHT_VH}
       />
 
       <MessageCompose

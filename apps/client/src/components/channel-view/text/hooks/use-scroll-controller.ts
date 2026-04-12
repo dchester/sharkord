@@ -130,6 +130,29 @@ const useScrollController = ({
     }
   }, [messages, hasTypingUsers, scrollToBottom]);
 
+  // keep bottom lock on container resize (input/footer height changes)
+  useEffect(() => {
+    const container = containerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      if (!shouldStickToBottom.current) {
+        return;
+      }
+
+      scrollToBottom();
+    });
+
+    observer.observe(container);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [scrollToBottom]);
+
   // scroll to bottom when async content loads (e.g. metadata images)
   const onAsyncContentLoaded = useCallback(() => {
     if (shouldStickToBottom.current) {

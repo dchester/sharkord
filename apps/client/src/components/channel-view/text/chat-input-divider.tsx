@@ -17,44 +17,27 @@ type TChatInputDividerProps = {
   defaultMaxHeightVh: number;
 };
 
-// measure the minimum useful height: everything in the compose that isn't
-// the tiptap editor (file cards, reply bar, buttons, etc.) plus one line
-// of the editor. no DOM mutation, no layout change.
+// calculate the minimum acceptable chat input height
 const measureMinHeight = (composeEl: HTMLDivElement): number => {
   const proseMirror = composeEl.querySelector('.ProseMirror') as HTMLElement | null;
   if (!proseMirror) return MIN_PX;
 
-  // clamp the editor to one line to measure the compose container's minimum
-  // useful height -- no content change, no undo history impact
-  proseMirror.style.overflow = 'hidden';
-  proseMirror.style.display = '-webkit-box';
-  proseMirror.style.webkitLineClamp = '1';
-  proseMirror.style.webkitBoxOrient = 'vertical';
-
+  // clamp to one line to measure empty state
   const savedHeight = composeEl.style.height;
   const savedMaxHeight = composeEl.style.maxHeight;
+  proseMirror.classList.add('line-clamp-1');
   composeEl.style.height = '';
   composeEl.style.maxHeight = '';
 
+  // measure
   const minHeight = composeEl.getBoundingClientRect().height;
 
+  // restore height
   composeEl.style.height = savedHeight;
   composeEl.style.maxHeight = savedMaxHeight;
-  proseMirror.style.overflow = '';
-  proseMirror.style.display = '';
-  proseMirror.style.webkitLineClamp = '';
-  proseMirror.style.webkitBoxOrient = '';
+  proseMirror.classList.remove('line-clamp-1');
 
   return Math.max(MIN_PX, minHeight);
-};
-
-const isEditorEmpty = (composeEl: HTMLDivElement): boolean => {
-  const editor = composeEl.querySelector('.ProseMirror') as HTMLElement | null;
-  if (!editor) return true;
-  return (
-    (editor.textContent ?? '').trim().length === 0 &&
-    !editor.querySelector('img')
-  );
 };
 
 const ChatInputDivider = ({
@@ -110,7 +93,7 @@ const ChatInputDivider = ({
 
         composeEl.style.height = `${finalPx}px`;
 
-        if (finalPx <= minPx + RESET_THRESHOLD_PX && isEditorEmpty(composeEl)) {
+        if (finalPx <= minPx + RESET_THRESHOLD_PX) {
           composeEl.style.height = '';
           composeEl.style.maxHeight = `${defaultMaxHeightVh}vh`;
           removeLocalStorageItem(storageKey);

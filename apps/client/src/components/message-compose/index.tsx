@@ -2,11 +2,11 @@ import { EmojiPicker } from '@/components/emoji-picker';
 import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
 import type { TTiptapInputHandle } from '@/components/tiptap-input';
 import { TiptapInput } from '@/components/tiptap-input';
-import { CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT } from '@/features/app/slice';
 import {
   getLocalStorageItemAsNumber,
   LocalStorageKey
 } from '@/helpers/storage';
+
 import { useChannelById } from '@/features/server/channels/hooks';
 import {
   useCan,
@@ -32,6 +32,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -60,6 +61,8 @@ type TMessageComposeProps = {
   ref?: Ref<TMessageComposeHandle>;
 };
 
+export const DEFAULT_MAX_HEIGHT_VH = 35;
+
 type TMessageComposeHandle = {
   clearFiles: () => void;
 };
@@ -74,8 +77,8 @@ const MessageCompose = memo(
     typingUsers,
     showPluginSlot = false,
     composeContainerRef,
-    inputStorageKey = LocalStorageKey.CHAT_INPUT_MAX_HEIGHT_VH,
-    inputDefaultMaxHeightVh = CHAT_INPUT_MAX_HEIGHT_VH_DEFAULT,
+    inputStorageKey = LocalStorageKey.CHAT_INPUT_HEIGHT_VH,
+    inputDefaultMaxHeightVh = DEFAULT_MAX_HEIGHT_VH,
     replyTarget,
     onCancelReply,
     onResize,
@@ -132,7 +135,7 @@ const MessageCompose = memo(
     } = useUploadFiles(channelId, containerRef, !canSendMessages);
 
     // on mount, restore the saved height or set the default max-height
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (!composeContainerRef) return;
       const el = composeContainerRef.current;
       if (!el) return;
@@ -174,14 +177,7 @@ const MessageCompose = memo(
       if (success) {
         clearFiles();
       }
-    }, [
-      message,
-      files,
-      canSendMessages,
-      onSend,
-      clearFiles,
-      publicSettings
-    ]);
+    }, [message, files, canSendMessages, onSend, clearFiles, publicSettings]);
 
     const onRemoveFileClick = useCallback(
       async (fileId: string) => {
@@ -222,7 +218,6 @@ const MessageCompose = memo(
       >
         <UsersTypingIndicator typingUsers={typingUsers} />
 
-        {/* row: scrollable content left, sticky buttons right */}
         <div
           className={`compose-scroll-row flex items-start flex-1 overflow-y-auto cursor-text${uploading ? ' bg-muted' : ''}`}
           onClick={(e) => {
