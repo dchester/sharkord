@@ -1,7 +1,7 @@
+import { DEFAULT_MAX_HEIGHT_VH } from '@/components/message-compose';
 import { useTypingUsersByThreadId } from '@/features/server/hooks';
 import { useThreadMessages } from '@/features/server/messages/hooks';
 import { LocalStorageKey } from '@/helpers/storage';
-import { DEFAULT_MAX_HEIGHT_VH } from '@/components/message-compose';
 import type { TJoinedMessage } from '@sharkord/shared';
 import { Spinner } from '@sharkord/ui';
 import { MessageSquareText } from 'lucide-react';
@@ -31,14 +31,19 @@ const ThreadContent = memo(
     const typingUsers = useTypingUsersByThreadId(parentMessageId);
     const composeContainerRef = useRef<HTMLDivElement>(null);
 
-    const { containerRef, onScroll, onAsyncContentLoaded, scrollToBottom, isAtBottom } =
-      useScrollController({
-        messages,
-        fetching,
-        hasMore,
-        loadMore,
-        hasTypingUsers: typingUsers.length > 0
-      });
+    const {
+      containerRef,
+      onScroll,
+      onAsyncContentLoaded,
+      scrollToBottom,
+      isAtBottom
+    } = useScrollController({
+      messages,
+      fetching,
+      hasMore,
+      loadMore,
+      hasTypingUsers: typingUsers.length > 0
+    });
 
     const onComposeResize = useCallback(() => {
       if (isAtBottom()) {

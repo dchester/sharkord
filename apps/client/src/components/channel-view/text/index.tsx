@@ -1,4 +1,5 @@
 import {
+  DEFAULT_MAX_HEIGHT_VH,
   MessageCompose,
   type TMessageComposeHandle
 } from '@/components/message-compose';
@@ -9,6 +10,7 @@ import {
 import { useMessages } from '@/features/server/messages/hooks';
 import { playSound } from '@/features/server/sounds/actions';
 import { SoundType } from '@/features/server/types';
+import { LocalStorageKey } from '@/helpers/storage';
 import { getTRPCClient } from '@/lib/trpc';
 import type { TReplyTarget } from '@/types';
 import {
@@ -23,8 +25,6 @@ import { throttle } from 'lodash-es';
 import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { LocalStorageKey } from '@/helpers/storage';
-import { DEFAULT_MAX_HEIGHT_VH } from '@/components/message-compose';
 import { ChatInputDivider } from './chat-input-divider';
 import { useScrollController } from './hooks/use-scroll-controller';
 import { useScrollToJumpTarget } from './hooks/use-scroll-to-jump-target';

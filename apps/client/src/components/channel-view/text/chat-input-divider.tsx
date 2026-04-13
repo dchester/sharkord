@@ -19,7 +19,9 @@ type TChatInputDividerProps = {
 
 // calculate the minimum acceptable chat input height
 const measureMinHeight = (composeEl: HTMLDivElement): number => {
-  const proseMirror = composeEl.querySelector('.ProseMirror') as HTMLElement | null;
+  const proseMirror = composeEl.querySelector(
+    '.ProseMirror'
+  ) as HTMLElement | null;
   if (!proseMirror) return MIN_PX;
 
   // clamp to one line to measure empty state
@@ -94,8 +96,13 @@ const ChatInputDivider = ({
         composeEl.style.height = `${finalPx}px`;
 
         if (finalPx <= minPx + RESET_THRESHOLD_PX) {
-          const proseMirror = composeEl.querySelector('.ProseMirror') as HTMLElement | null;
-          if (proseMirror && proseMirror.scrollHeight > minPx + RESET_THRESHOLD_PX) {
+          const proseMirror = composeEl.querySelector(
+            '.ProseMirror'
+          ) as HTMLElement | null;
+          if (
+            proseMirror &&
+            proseMirror.scrollHeight > minPx + RESET_THRESHOLD_PX
+          ) {
             // multi-line content -- pin at min height
             composeEl.style.height = `${minPx}px`;
             composeEl.style.maxHeight = '';

@@ -1,8 +1,8 @@
 import { MessageCompose } from '@/components/message-compose';
 import { playSound } from '@/features/server/sounds/actions';
 import { SoundType } from '@/features/server/types';
-import { getTRPCClient } from '@/lib/trpc';
 import type { LocalStorageKey } from '@/helpers/storage';
+import { getTRPCClient } from '@/lib/trpc';
 import type { TReplyTarget } from '@/types';
 import type { TJoinedPublicUser } from '@sharkord/shared';
 import {

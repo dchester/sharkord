@@ -20,9 +20,9 @@ import type { TReplyTarget } from '@/types';
 import type { TJoinedPublicUser, TTempFile } from '@sharkord/shared';
 import {
   ChannelPermission,
+  isEmptyMessage,
   Permission,
-  PluginSlot,
-  isEmptyMessage
+  PluginSlot
 } from '@sharkord/shared';
 import { Button, Spinner } from '@sharkord/ui';
 import { filesize } from 'filesize';
@@ -140,10 +140,8 @@ const MessageCompose = memo(
       const el = composeContainerRef.current;
       if (!el) return;
       const savedVh =
-        getLocalStorageItemAsNumber(
-          inputStorageKey,
-          inputDefaultMaxHeightVh
-        ) ?? inputDefaultMaxHeightVh;
+        getLocalStorageItemAsNumber(inputStorageKey, inputDefaultMaxHeightVh) ??
+        inputDefaultMaxHeightVh;
       if (savedVh === inputDefaultMaxHeightVh) {
         el.style.maxHeight = `${savedVh}vh`;
       } else {
@@ -184,7 +182,16 @@ const MessageCompose = memo(
           delete el.dataset.pendingUnpinOnSend;
         }
       }
-    }, [message, files, canSendMessages, onSend, clearFiles, publicSettings, containerRef, inputDefaultMaxHeightVh]);
+    }, [
+      message,
+      files,
+      canSendMessages,
+      onSend,
+      clearFiles,
+      publicSettings,
+      containerRef,
+      inputDefaultMaxHeightVh
+    ]);
 
     const onRemoveFileClick = useCallback(
       async (fileId: string) => {
